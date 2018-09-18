@@ -13,11 +13,11 @@ dat <- read_csv("Accident_Information_2000.csv")
 colnames(dat)
 head(dat)
 
-#Dealing with missing values
+#Dealing with missing values (894 rows)
 library(dplyr)
 missing.values.row.a <- filter(dat, !complete.cases(dat))
 
-##not much NAs for each rows
+##not much NAs for each rows (max:3)
 max.na.dat <- max(apply(dat, 1, function(x) sum(is.na(x))))
 
 ##columns {LSOA_of_Accident_Location:141, 2nd_Road_Class:830} NAs
@@ -55,6 +55,6 @@ typeof.dat.col <- c()
 for(i in colnames(dat)) {
   typeof.dat.col <- c(typeof.dat.col, typeof(dat[[i]]))
 }
-
+typeof.dat.col
 
 
