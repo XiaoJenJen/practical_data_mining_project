@@ -7,32 +7,54 @@
 
 #Import data
 library(readr)
-adat <- read_csv("Accident_Information.csv")
-vdat <- read_csv("Vehicle_Information.csv")
+dat <- read_csv("Accident_Information_2000.csv")
 
 #Data Exploring
-colnames(adat)
-colnames(vdat)
-head(adat)
-head(vdat)
+colnames(dat)
+head(dat)
 
 #Dealing with missing values
 library(dplyr)
-missing.values.row.a <- filter(adat, !complete.cases(adat))
-missing.values.row.v <- filter(vdat, !complete.cases(vdat))
+missing.values.row.a <- filter(dat, !complete.cases(dat))
 
 ##not much NAs for each rows
-max.na.adat <- max(apply(adat, 1, function(x) sum(is.na(x))))
-max.na.vdat <- max(apply(vdat, 1, function(x) sum(is.na(x))))
+max.na.dat <- max(apply(dat, 1, function(x) sum(is.na(x))))
 
-##columns {LSOA_of_Accident_Location:137822, 2nd_Road_Class:789860} NAs
-sort(apply(adat, 2, function(x) sum(is.na(x))))
-##columns {model:214486, Propulsion:245843, Engine_Capacity_.CC.:265861, 
-##         Age_of_Vehicle:358149, Driver_IMD_Decile:734812} NAs
-sort(apply(vdat, 2, function(x) sum(is.na(x))))
+##columns {LSOA_of_Accident_Location:141, 2nd_Road_Class:830} NAs
+sort(apply(dat, 2, function(x) sum(is.na(x))))
+
+### Remove "X2nd_Road_Class" and "LSOA_of_Accident_Location" from data
+dat <- dat[, -c(4, 20)]
+
+## Focus on the attributes with NAs
+dat.na.col <- c("Did_Police_Officer_Attend_Scene_of_Accident", 
+                 "Pedestrian_Crossing.Human_Control", "Pedestrian_Crossing.Physical_Facilities", 
+                 "X2nd_Road_Number", "LSOA_of_Accident_Location")
+### Data type of these columns
+typeof.dat.na <- c()
+for(i in dat.na.col) {
+  typeof.dat.na <- c(typeof.dat.na, typeof(dat[[i]]))
+}
+
+### Filling NAs
+Mode <- function(x, na.rm=FALSE){ 
+    if(na.rm) x<-x[!is.na(x)]
+    ux <- unique (x)
+    return (ux[which.max(tabulate(match(x, ux)))])
+  }
+
+dat[is.na(dat$X2nd_Road_Number), "X2nd_Road_Number"] <- Mode(dat$X2nd_Road_Number)
+dat[is.na(dat$Pedestrian_Crossing.Physical_Facilities), "Pedestrian_Crossing.Physical_Facilities"] <- Mode(dat$Pedestrian_Crossing.Physical_Facilities)
+dat[is.na(dat$Pedestrian_Crossing.Human_Control), "Pedestrian_Crossing.Human_Control"] <- Mode(dat$Pedestrian_Crossing.Human_Control)
+dat[is.na(dat$Did_Police_Officer_Attend_Scene_of_Accident), "Did_Police_Officer_Attend_Scene_of_Accident"] <- Mode(dat$Did_Police_Officer_Attend_Scene_of_Accident)
 
 
-
+# Correlation of each attribute
+## identify type of each attribute
+typeof.dat.col <- c()
+for(i in colnames(dat)) {
+  typeof.dat.col <- c(typeof.dat.col, typeof(dat[[i]]))
+}
 
 
 
