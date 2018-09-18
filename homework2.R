@@ -59,6 +59,10 @@ cor_value <- cor(age, fat, method = "pearson")
 cov_value <- cov(age, fat, method = "pearson")
 
 #3.11
+##A
 age_2 <- c(13, 15, 16, 16, 19, 20, 20, 21, 22, 22, 25, 25, 25, 25, 30, 33, 33, 35, 35, 35, 35, 36, 40, 45, 46, 52, 70) 
 hist(age_2, xlab = "Age", main = "Equal-Width Histogram")
+##B
+library(sampling)
+
 
