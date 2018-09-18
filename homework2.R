@@ -45,13 +45,13 @@ for(n in data) {
 new_data_z
 
 ##z-score_mad
-meanAbosluteDeviation = sum(abs(normData - mean(normData))) / length(normData)
-zscoreMAD = (normData - mean(normData)) / meanAbosluteDeviation
+meanAbosluteDeviation = sum(abs(data - mean(data))) / length(data)
+zscoreMAD = (data - mean(data)) / meanAbosluteDeviation
 zscoreMAD
 
 ##decimal
-nDigits = nchar(max(abs(normData)))
-decimalScale = normData / (10^nDigits)
+nDigits = nchar(max(abs(data)))
+decimalScale = data / (10^nDigits)
 decimalScale
 
 #3.8
@@ -74,11 +74,15 @@ z_score <- function(data) {
 }
 
 new_age <- z_score(age)
+new_age
 new_fat <- z_score(fat)
+new_fat
 
 ##(B)
 cor_value <- cor(age, fat, method = "pearson")
+cor_value
 cov_value <- cov(age, fat, method = "pearson")
+cov_value
 
 #3.11
 ##A
