@@ -5,6 +5,102 @@
 #                Moonsung Kim    #
 ##################################
 
+#RExercise
+#Filling unknowns using linear regression
+#This method is used when two variables are highly correlated. One value of variable A can be used to predict the value for variable B using the linear regression model
+#first let's see what variables in algae are highly correlated
+symnum(cor(algae[, 4:18], use = "complete.obs")) # study only the numerical variables (4-18) and use only the complete observations -- obs with NAs are not used. symnum() makes the correlation matrix more readable
+
+#we can see from the matrix, PO4 and oPO4 are correctly with confidence level of 90%.
+#Next, we find the linear model between PO4 and oPO4
+algae <- algae[-manyNAs(algae), ] #manyNAs is a method provided in DMwR2, it selects the observations with 20% or move values as NAs. 
+m = lm(PO4 ~ oPO4, data=algae)
+  
+#check the model, is it good? See http://r-statistics.co/Linear-Regression.html
+summary(m)
+
+#this lm is PO4 = 1.293*oPO4 + 42.897
+algae$PO4
+
+#scaling and normalization
+library(dplyr)
+data(iris)
+iris.norm <- cbind(scale(select(iris, -Species)), select(iris, Species)) #because scale() takes numeric matrix as input, we first remove Species column, then use cbind() to add the column back after normalization.
+summary(iris)
+max <- apply(select(iris, -Species), 2, max, na.rm=TRUE)
+min <- apply(select(iris, -Species), 2, min, na.rm=TRUE)
+iris.scaled <- cbind(scale(select(iris, -Species), center=min, scale=max-min), select(iris, Species)) 
+summary(iris.scaled)
+
+#discretizing variables
+data(Boston, package="MASS")
+summary(Boston$age)
+Boston$newAge <- cut(Boston$age,5) #create 5 bins and add new column newAge to Boston
+table(Boston$newAge)
+Boston$newAge <- cut(Boston$age,5, labels=c("veryyoung", "young", "mid", "older", "old")) #add labels
+table(Boston$newAge)
+
+#use ChiMerge to discretize data with class labels
+data(iris)
+iris
+install.packages("discretization")
+library("discretization")
+iris.dis = chiM(iris, alpha=0.5) #assume the last column is the class label
+iris.dis$cutp #show cut points
+iris.dis$Disc.data #discretized data
+
+#variable correlations and dimensionality reduction
+#chi-squared test
+# H0: (Prisoner's race)(Victim's race) are independent
+# data (contingency table):
+  racetable = rbind(c(151,9),
+                   c(63,103))
+test1 = chisq.test(racetable, correct=F)
+test1
+
+
+#Correlations
+data(iris)
+cor(select(iris,-Species)) #base R method cor() take a numeric matrix and compute correlations among all variables
+#use Principle Components Analysis (pca)
+pca.data <-iris[, -5] #not including the 5th column Species
+pca <- princomp(pca.data)
+loadings(pca)
+head(pca$scores)
+#if we are happy with capturing 75% of the original variance of the cases, we can reduce the original data to the first three components.
+#component scores are computed based on the loading, for example, comp1 = 0.361*Sepal.Length+0.857*Petal.Length+0.358*Petal.Width 
+iris.reduced <- data.frame(pca$scores[,1:3], Species=iris$Species)
+head(iris.reduced)
+
+#stratified sampling
+library(dplyr)
+set.seed(1) #make results the same each run
+summary(algae)
+sample <-algae %>% group_by(season) %>% sample_frac(0.25)
+summary(sample)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #Import data
 library(readr)
 dat <- read_csv("Accident_Information_2000.csv")
