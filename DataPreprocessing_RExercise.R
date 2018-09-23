@@ -147,10 +147,18 @@ dat[is.na(dat$Did_Police_Officer_Attend_Scene_of_Accident), "Did_Police_Officer_
 
 # Correlation of each attribute
 ## identify type of each attribute
-typeof.dat.col <- c()
-for(i in colnames(dat)) {
-  typeof.dat.col <- c(typeof.dat.col, typeof(dat[[i]]))
-}
-typeof.dat.col
+#typeof.dat.col <- c()
+#for(i in colnames(dat)) {
+#  typeof.dat.col <- c(typeof.dat.col, typeof(dat[[i]]))
+#}
+#typeof.dat.col
 
+# Get numeric attributes and compute correlations
+numeric_dat = select_if(dat, is.numeric)
+attr_cor = cor(numeric_dat)
 
+# Sort correlations, by absolute value, from highest to lowest.
+attr_cor[lower.tri(attr_cor,diag=TRUE)]=NA  
+sorted_cor=as.data.frame(as.table(attr_cor))
+sorted_cor=na.omit(sorted_cor)
+sorted_cor=sorted_cor[order(-abs(sorted_cor$Freq)),]
