@@ -162,3 +162,27 @@ attr_cor[lower.tri(attr_cor,diag=TRUE)]=NA
 sorted_cor=as.data.frame(as.table(attr_cor))
 sorted_cor=na.omit(sorted_cor)
 sorted_cor=sorted_cor[order(-abs(sorted_cor$Freq)),]
+
+
+# Discrtization
+install.packages("dprep")
+library(dprep)
+# Just found dprep doesn't support R 3.5.1
+
+
+# Hierarchy
+hieararchy <- as.data.frame(table(dat[["Date"]]))
+Year <- c()
+Month <- c()
+for(i in 1:nrow(dat)) {
+  year <- strsplit(as.character(dat[["Date"]][i]), "-")[[1]][1]
+  month <- paste(year, strsplit(as.character(dat[["Date"]][i]), "-")[[1]][2], sep = "-")
+  Year <- c(Year, year)
+  Month <- c(Month, month)
+}
+Month <- as.data.frame(table(Month))
+Year <- as.data.frame(table(Year))
+mean(Year[, 2])
+
+
+
