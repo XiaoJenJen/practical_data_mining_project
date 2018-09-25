@@ -165,10 +165,25 @@ sorted_cor=sorted_cor[order(-abs(sorted_cor$Freq)),]
 
 
 # Discrtization
-install.packages("dprep")
+#install.packages("dprep")
 library(dprep)
-# Just found dprep doesn't support R 3.5.1
+# Just found dprep doesn't support R 3.5.1 (removed from CRAN)
 
+#ChiMerge
+numeric_dat_df <- as.data.frame(numeric_dat)
+num_dat.disc=chiMerge(numeric_dat_df, 4, out="num")
+numeric_dat.freq <- as.data.frame(table(num_dat.disc[["Latitude"]]))
+
+#Bin
+# Separate data into bins of depth 3
+bins = matrix(numeric_dat[["Latitude"]], nrow = nrow(numeric_dat) / 50, byrow = TRUE)
+# Find the average of each bin
+bin_means = apply(bins, 1, FUN = mean)
+# Replace values with their bin mean
+for (i in seq(1:nrow(bins))) {
+  bins[i,] = bin_means[i]
+}
+bin_df <- as.data.frame(table(round(bins, 2)))
 
 # Hierarchy
 hieararchy <- as.data.frame(table(dat[["Date"]]))
