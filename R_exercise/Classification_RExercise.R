@@ -198,9 +198,64 @@ rfpred <- predict(rfm, ames_test, n.trees=750)
 RMSE(rfpred, ames_test$Sale_Price)
 
 
+#######################
+#PerformanceEstimation#
+#######################
+install.packages("performanceEstimation")
+install.packages("e1071")
+
+library(performanceEstimation)
+library(e1071)
+library(nnet)
+
+data(iris)
+data(swiss)
+data(mtcars)
+
+res1 <- performanceEstimation(PredTask(Species ~ .,iris),
+                              Workflow(learner="svm"),
+                              EstimationTask(metrics="acc",   
+                                             method=Holdout(hldSz=0.2)))
+summary(res1)
+
+res1 <- performanceEstimation(PredTask(Species ~ .,iris),
+                              Workflow(learner="svm"),
+                              EstimationTask(metrics="acc",  
+                                             method=Holdout(nReps=10,hldSz=0.2)))
+summary(res1)
+
+res <- performanceEstimation(
+  c(PredTask(Infant.Mortality ~ .,swiss),PredTask(mpg ~ ., mtcars)),
+  #run svm with different combinations of costs and gammas
+  c(workflowVariants(learner="svm",
+                     learner.pars=list(cost=c(1,10),gamma=c(0.01,0.5))), 
+    #run nnet with different combinations of hidden layer sizes and decays
+    workflowVariants(learner="nnet",
+                     learner.pars=list(size=c(3, 6), decay=c(0.01, 0.001)))
+  ),
+  EstimationTask(metrics="mse", method=CV(nReps=1, nFolds=10))
+)
+summary(res)
+getWorkflow("svm.v2", res)
+(pres <- pairedComparisons(res,"nnet.v2"))
 
 
+myWF <- function(form,train,test,wL=0.5,...) {
+  require(rpart,quietly=TRUE)
+  ml <- lm(form,train) #linear regression
+  mr <- rpart(form,train) #recursive partitioning and regression trees
+  pl <- predict(ml,test)
+  pr <- predict(mr,test)
+  ps <- wL*pl+(1-wL)*pr #final prediction of myWF is the weighted average from the two algorithms
+  list(trues=responseValues(form,test),preds=ps)
+}
 
+resmywf <- performanceEstimation(
+  PredTask(mpg ~ ., mtcars),
+  workflowVariants(wf="myWF",wL=seq(0,1,by=0.1)),
+  EstimationTask(metrics="mae",method=Bootstrap(nReps=50))
+)
+summary(resmywf)
 
 
 
