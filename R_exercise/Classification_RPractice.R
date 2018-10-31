@@ -1,5 +1,3 @@
-
-
 accidents = read.csv(file = "Accident_Information_London_C.csv",
                      header = TRUE,
                      sep = ",",
@@ -10,7 +8,7 @@ colnames(accidents)
 lapply(accidents, class)
 
 #Drop ID and Police Force(only contains one variable)
-a = subset(accidents, select = -c(1, 10))
+a = subset(accidents, select = -c(1, 10, 18))
 
 #transform character into integer
 unique(accidents$Accident_Severity)
@@ -75,22 +73,19 @@ a$Weather_Conditions = factor(accidents$Weather_Conditions, levels = c("Unknown"
                                       labels = c(0, 1, 2, 3, 4, 5, 6, 7))
 unique(a$Weather_Conditions)
 
-a = subset(a, select = c(1, 4, 9, 10, 12, 13, 15))
-
-a$Light_Conditions = as.integer(a$Light_Conditions)
-a$Road_Surface_Conditions = as.integer(a$Road_Surface_Conditions)
-a$Road_Type = as.integer(a$Road_Type)
+a = subset(a, select = c(1, 4, 5, 10, 13, 15))
 
 library(rpart)
 #Build a Tree
 ##Split Data (train:3684/test:400)
+set.seed(123)
 nrow(a)
 rndSample <- sample(1:nrow(a),3684)                                                                                                
 tr <- a[rndSample, ]
 #rest is the test examples
 ts <- a[-rndSample, ]
 #build a tree
-ct <- rpart(Accident_Severity ~ Light_Conditions+Road_Surface_Conditions+Road_Type, data = tr, method = "class")
+ct <- rpart(Accident_Severity ~ ., data = tr, method = "class", control=rpart.control(minsplit=1, minbucket=1, cp=0.001))
 #use ct to predict class labels for the test examples
 ps1 <- predict(ct, ts) #this gives the probably of an instance belong to a class
 head(ps1)
@@ -98,51 +93,39 @@ ps2 <- predict(ct, ts, type="class")
 head(ps2)
 table(a$Accident_Severity)
 
-library(rpart.plot)
-prp(ct, type=0, extra=101, roundint = FALSE)
-
-# In this part, we want to know "if this accident is serious or not?"
-# So we tried to predict Accident_Severity with three levels: "Slight:1", "Serious:2, Fatal:3". 
-# However, the prediction always shows "slight" as the result, since "Slight" accidents are 85% of all.
-# Therefore, we have to balance our dataset and drop unrelated features.
-
-#Build a Tree
-##Split Data (train:3684/test:400)
-nrow(a)
-rndSample <- sample(1:nrow(a),3684)                                                                                                
-tr <- a[rndSample, ]
-#rest is the test examples
-ts <- a[-rndSample, ]
-#build a tree
-ct <- rpart(Accident_Severity ~ ., tr, method = "class")
-#use ct to predict class labels for the test examples
-ps1 <- predict(ct, ts) #this gives the probably of an instance belong to a class
-head(ps1)
-ps2 <- predict(ct, ts, type="class")
-head(ps2)
-#compare ps2 results (machine predication) with correct labels in test
 (cm <- table(ps2, ts$Accident_Severity))
-#find the error rate in percentage
 (1-sum(diag(cm))/sum(cm))
 
+library(rpart.plot)
 prp(ct, type=0, extra=101, roundint = FALSE)
-plotcp(ct)
 
 # Ensemble method
 library(adabag)
 # 500 trees will be too mouch
-ctbag <- bagging(Accident_Severity ~ ., tr, mfinal = 200)
+ctbag <- bagging(Accident_Severity ~ ., tr, mfinal = 100, control=rpart.control(minsplit=1, minbucket=1, cp=0.001))
 ps2bag <- predict(ctbag, ts)
 ps2bag$confusion
-ps2bag$error   #reduced from 0.06 to 0.04
+ps2bag$error   #reduced from 0.1375 to 0.1375
 
 #boosting:#iteratively add new models to the ensemble, each model tries to overcome the errors made by the previous model
-ctboo <- boosting(Accident_Severity ~ ., tr, mfinal = 200)
+ctboo <- boosting(Accident_Severity ~ ., tr, mfinal = 100, control=rpart.control(minsplit=1, minbucket=1, cp=0.001))
 ps2boo <- predict(ctboo, ts) 
 ps2boo$confusion
 ps2boo$error
 
-library(randomForest)
-#build model based on a forest of 750 trees
-rfm <- randomForest(Accident_Severity ~ ., tr, ntree=200)
-rfpred <- predict(rfm, ts)
+# In this part, we want to know "if this accident is serious or not?",
+# so we tried to predict Accident_Severity with three levels: "Slight:1", "Serious:2, Fatal:3". 
+# However, the prediction almost everytime shows "slight" as the result, since "Slight" accidents are 85% of all.
+# Therefore, we tried to balance our dataset and drop unrelated features (with too many features, 
+# running time would icrease dramatically), but it doesn't work well.
+# It seems that our features are not very relevant to Accident_Severity, because I only got one root at first,
+# and then I tried to use the most loose control, the tree was finally built successfully.
+
+# We ran it several times, and it is different for every time (large variance). Based on our tree plots, 
+# the features: "Number of Casualties", "Weather_Condition", "Time", "Road_Tupe" are most relevant.
+# According to the tree, this result suggests that when casualties greater than 1.5, 
+# it is a serious accidents (obviously), and when the weather is rainy or snowy (other than fine), 
+# it is more likely a serious accident. Another interesting thing is that we assume that serious car
+# accidents happened during the midenight at first. However, the result showed that  the slight accidents happened 
+# in midnight and afternoon.
+
