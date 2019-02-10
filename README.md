@@ -5,7 +5,7 @@ Jenny Xu, Daniel Truong, Ti-Tai Wang and MoonSung Kim in 2018 Fall
 * Our goal is to predict the factors in traffic accidents in the case of hut n run. 
 * Please see the [project slides](https://github.com/XiaoJenJen/practical_data_mining_project/blob/master/Presentation.pptx) for a thorough understanding and visualization. 
 
-## How we do?: 
+## How we do?
 * Programming language:R
 * Introduction: data scource, basic statistic summary
 * Data Preprocessing: normalize, outlier detection, missing values
