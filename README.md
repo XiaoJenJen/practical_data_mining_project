@@ -2,7 +2,7 @@
 Jenny Xu, Daniel Truong, Ti-Tai Wang and MoonSung Kim in 2018 Fall
 
 ## Why we do this and what the result is?
-* Our goal is to predict the factors in traffic accidents in the case of hut n run. 
+* Our goal is to predict the factors in traffic accidents in the case of hit n run. 
 * Please see the [project slides](https://github.com/XiaoJenJen/practical_data_mining_project/blob/master/Presentation.pptx) for a thorough understanding and visualization. 
 
 ## How we do?
